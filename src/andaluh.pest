@@ -1,0 +1,15 @@
+letter = { (LETTER | NUMBER | PUNCTUATION | SYMBOL) }
+word = { letter+ }
+space = { SEPARATOR+ }
+phrase = { (word ~ SEPARATOR+)+ }
+
+// supress muted /h/
+H = { ("h" | "H") }
+nH = { 'a'..'g' | 'i'..'z' | 'A'..'G' | 'I'..'Z' }
+initial_h = { H ~ letter }
+inner_ch = { ("c" | "C") ~ H ~ letter }
+inner_h = { H ~ letter }
+hua = { H ~ ("ua" | "UA" | "Ua" | "uA") }
+hue = { H ~ ("ue" | "UE" | "Ue" | "uE") }
+noh = { nH+ }
+h = _{ (initial_h* ~ ((hua | hue | inner_ch | inner_h) | noh+)+ ~ space?)+ }

@@ -8,3 +8,6 @@ description = "Transliterate español (spanish) spelling to andaluz proposals"
 license = "LGPL-3.0-or-later"
 
 [dependencies]
+pest = "2.1.1"
+pest_derive = "2.1.0"
+failure = "0.1.5"
