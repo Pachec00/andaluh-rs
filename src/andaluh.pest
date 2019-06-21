@@ -30,3 +30,9 @@ initial_x = { X ~ letter }
 inner_vowel_x = { vowel ~ X ~ vowel }
 
 x = _{ (initial_x* ~ ((inner_vowel_x) | letter+)+ ~ space?)+ }
+
+// Replacement rules for /∫/ (voiceless postalveolar fricative)
+
+C = { ("c" | "C") }
+CH = { C ~ H }
+ch = _{ ((CH | letter)+ ~ space?)+ }

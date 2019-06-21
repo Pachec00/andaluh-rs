@@ -91,6 +91,21 @@ pub fn x_rule(input: &str) -> Result<String, Error> {
         Ok(output.join(""))
 }
 
+pub fn ch_rule(input: &str) -> Result<String, Error> {
+        let pairs = AndaluhParser::parse(Rule::ch, input)?;
+        let mut output: Vec<String> = vec![];
+
+        for pair in pairs {
+            let chunk = match pair.as_rule() {
+                Rule::CH => keep_case("x", pair.as_str()),
+                _ => String::from(pair.as_str()),
+            };
+            output.push(chunk);
+        }
+
+        Ok(output.join(""))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -110,6 +125,15 @@ mod tests {
         let expected = "Çilófono aççila éççito çenofobia";
 
         let output = x_rule(input).expect("Wrong parser");
+        assert_eq!(output, expected);
+    }
+
+    #[test]
+    fn test_ch_rule() {
+        let input = "Chungo Chachi";
+        let expected = "Xungo Xaxi";
+
+        let output = ch_rule(input).expect("Wrong parser");
         assert_eq!(output, expected);
     }
 }
