@@ -3,7 +3,12 @@ word = { letter+ }
 space = { SEPARATOR+ }
 phrase = { (word ~ SEPARATOR+)+ }
 
+vowel_tilde = { ("á"|"é"|"í"|"ú") }
+vowel_ntilde = { ("a"|"e"|"i"|"o"|"u") }
+vowel = { (vowel_ntilde | vowel_tilde) }
+
 // supress muted /h/
+
 H = { ("h" | "H") }
 nH = { 'a'..'g' | 'i'..'z' | 'A'..'G' | 'I'..'Z' }
 initial_h = { H ~ letter }
@@ -13,3 +18,15 @@ hua = { H ~ ("ua" | "UA" | "Ua" | "uA") }
 hue = { H ~ ("ue" | "UE" | "Ue" | "uE") }
 noh = { nH+ }
 h = _{ (initial_h* ~ ((hua | hue | inner_ch | inner_h) | noh+)+ ~ space?)+ }
+
+// Replacement rules for /ks/ with EPA VAF
+
+X = { ("x" | "X") }
+// If the text begins with /ks/
+// Xilófono roto => Çilófono roto
+initial_x = { X ~ letter }
+// If the /ks/ sound is between vowels
+// Axila => Aççila | Éxito => Éççito
+inner_vowel_x = { vowel ~ X ~ vowel }
+
+x = _{ (initial_x* ~ ((inner_vowel_x) | letter+)+ ~ space?)+ }
