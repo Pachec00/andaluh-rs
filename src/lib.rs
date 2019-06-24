@@ -1,5 +1,6 @@
 use pest::Parser;
 use pest_derive::Parser;
+use pest::iterators::Pair;
 
 use unicode_segmentation::UnicodeSegmentation;
 
@@ -25,6 +26,27 @@ macro_rules! slice {
     }
 }
 
+macro_rules! rule {
+    ($rule: expr, $input: expr, $( $t: pat => $r: expr ),* ) => {{
+        let pairs = AndaluhParser::parse($rule, $input)?;
+        let mut output: Vec<String> = vec![];
+
+        for pair in pairs {
+            let chunk = match pair.as_rule() {
+                $( $t => {
+                    $r(pair)
+                } ),*
+                _ => {
+                    String::from(pair.as_str())
+                },
+            };
+            output.push(chunk);
+        }
+
+        Ok(output.join(""))
+    }}
+}
+
 #[derive(Parser)]
 #[grammar = "andaluh.pest"]
 pub struct AndaluhParser;
@@ -44,159 +66,98 @@ pub fn epa() {
 }
 
 pub fn h_rule(input: &str) -> Result<String, Error> {
-        let pairs = AndaluhParser::parse(Rule::h, input)?;
-        let mut output: Vec<String> = vec![];
-
-        for pair in pairs {
-            let chunk = match pair.as_rule() {
-                Rule::initial_h => String::from(&pair.as_str()[1..]),
-                Rule::hue => {
-                    keep_case("güe", &pair.as_str())
-                },
-                Rule::hua => {
-                    keep_case("gua", &pair.as_str())
-                },
-                Rule::inner_h => String::from(&pair.as_str()[1..]),
-                Rule::inner_ch => String::from(pair.as_str()),
-                _ => String::from(pair.as_str()),
-            };
-            output.push(chunk);
-        }
-
-        Ok(output.join(""))
+    rule!(Rule::h, input,
+        Rule::initial_h => |pair: Pair<Rule>| {
+            String::from(&pair.as_str()[1..])
+        },
+        Rule::inner_h => |pair: Pair<Rule>| {
+            String::from(&pair.as_str()[1..])
+        },
+        Rule::hue => |pair: Pair<Rule>| {
+            keep_case("güe", &pair.as_str())
+        },
+        Rule::hua => |pair: Pair<Rule>| {
+            keep_case("gua", &pair.as_str())
+        })
 }
 
 pub fn x_rule(input: &str) -> Result<String, Error> {
-        let pairs = AndaluhParser::parse(Rule::x, input)?;
-        let mut output: Vec<String> = vec![];
-
-        for pair in pairs {
-            let chunk = match pair.as_rule() {
-                Rule::initial_x => {
-                    let s = &pair.as_str();
-                    let next = &s[1..];
-                    keep_case("ç", s) + next
-                }
-                Rule::inner_vowel_x => {
-                    let s = pair.as_str();
-                    let prev = slice!(s, 0, 1);
-                    let x = format!("{0}{0}", slice!(s, 1, 2));
-                    let next = slice!(s, 2);
-                    prev + &keep_case("çç", &x) + &next
-                }
-                _ => String::from(pair.as_str()),
-            };
-            output.push(chunk);
-        }
-
-        Ok(output.join(""))
+    rule!(Rule::x, input,
+        Rule::initial_x => |pair: Pair<Rule>| {
+            let s = &pair.as_str();
+            let next = &s[1..];
+            keep_case("ç", s) + next
+        },
+        Rule::inner_vowel_x => |pair: Pair<Rule>| {
+            let s = pair.as_str();
+            let prev = slice!(s, 0, 1);
+            let x = format!("{0}{0}", slice!(s, 1, 2));
+            let next = slice!(s, 2);
+            prev + &keep_case("çç", &x) + &next
+        })
 }
 
 pub fn ch_rule(input: &str) -> Result<String, Error> {
-        let pairs = AndaluhParser::parse(Rule::ch, input)?;
-        let mut output: Vec<String> = vec![];
-
-        for pair in pairs {
-            let chunk = match pair.as_rule() {
-                Rule::CH => keep_case("x", pair.as_str()),
-                _ => String::from(pair.as_str()),
-            };
-            output.push(chunk);
-        }
-
-        Ok(output.join(""))
+    rule!(Rule::ch, input,
+        Rule::CH => |pair: Pair<Rule>| {
+            keep_case("x", pair.as_str())
+        })
 }
 
 pub fn gj_rule(input: &str) -> Result<String, Error> {
-        let pairs = AndaluhParser::parse(Rule::gj, input)?;
-        let mut output: Vec<String> = vec![];
-
-        for pair in pairs {
-            let chunk = match pair.as_rule() {
-                Rule::BUE1 => {
-                    let s = pair.as_str();
-                    let b = slice!(s, 0, 1);
-                    let next = slice!(s, 1);
-                    keep_case("g", &b) + &next
-                },
-                Rule::BUE => {
-                    let s = pair.as_str();
-                    let prev = slice!(s, 0, 1);
-                    let b = slice!(s, 1, 2);
-                    let next = slice!(s, 2);
-                    prev + &keep_case("g", &b) + &next
-                },
-                Rule::GJV => {
-                    let s = pair.as_str();
-                    let gj = slice!(s, 0, 1);
-                    let next = slice!(s, 1);
-                    keep_case("h", &gj) + &next
-                },
-                Rule::GUE => {
-                    let s = pair.as_str();
-                    let g = slice!(s, 0, 1);
-                    let next = slice!(s, 2);
-                    g + &next
-                },
-                Rule::GUEd => {
-                    let s = pair.as_str();
-                    let g = slice!(s, 0, 1);
-                    let u = slice!(s, 1, 2);
-                    let next = slice!(s, 2);
-                    g + &keep_case("u", &u) + &next
-                },
-                _ => {
-                    String::from(pair.as_str())
-                },
-            };
-            output.push(chunk);
-        }
-
-        Ok(output.join(""))
+    rule!(Rule::gj, input,
+        Rule::BUE1 => |pair: Pair<Rule>| {
+                let s = pair.as_str();
+                let b = slice!(s, 0, 1);
+                let next = slice!(s, 1);
+                keep_case("g", &b) + &next
+            },
+        Rule::BUE => |pair: Pair<Rule>| {
+            let s = pair.as_str();
+            let prev = slice!(s, 0, 1);
+            let b = slice!(s, 1, 2);
+            let next = slice!(s, 2);
+            prev + &keep_case("g", &b) + &next
+        },
+        Rule::GJV => |pair: Pair<Rule>| {
+            let s = pair.as_str();
+            let gj = slice!(s, 0, 1);
+            let next = slice!(s, 1);
+            keep_case("h", &gj) + &next
+        },
+        Rule::GUE => |pair: Pair<Rule>| {
+            let s = pair.as_str();
+            let g = slice!(s, 0, 1);
+            let next = slice!(s, 2);
+            g + &next
+        },
+        Rule::GUEd => |pair: Pair<Rule>| {
+            let s = pair.as_str();
+            let g = slice!(s, 0, 1);
+            let u = slice!(s, 1, 2);
+            let next = slice!(s, 2);
+            g + &keep_case("u", &u) + &next
+        })
 }
 
 pub fn v_rule(input: &str) -> Result<String, Error> {
-        let pairs = AndaluhParser::parse(Rule::v, input)?;
-        let mut output: Vec<String> = vec![];
-
-        for pair in pairs {
-            let chunk = match pair.as_rule() {
-                Rule::NV => {
+    rule!(Rule::v, input,
+        Rule::NV => |pair: Pair<Rule>| {
                     let s = pair.as_str();
                     keep_case("mb", s)
-                },
-                Rule::V => {
-                    let s = pair.as_str();
-                    keep_case("b", s)
-                },
-                _ => {
-                    String::from(pair.as_str())
-                },
-            };
-            output.push(chunk);
-        }
-
-        Ok(output.join(""))
+        },
+        Rule::V => |pair: Pair<Rule>| {
+            let s = pair.as_str();
+            keep_case("b", s)
+        })
 }
 
 pub fn ll_rule(input: &str) -> Result<String, Error> {
-        let pairs = AndaluhParser::parse(Rule::ll, input)?;
-        let mut output: Vec<String> = vec![];
-
-        for pair in pairs {
-            let chunk = match pair.as_rule() {
-                Rule::LL => {
-                    let s = pair.as_str();
-                    keep_case("y", s)
-                },
-                _ => {
-                    String::from(pair.as_str())
-                },
-            };
-            output.push(chunk);
-        }
-
-        Ok(output.join(""))
+    rule!(Rule::ll, input,
+        Rule::LL => |pair: Pair<Rule>| {
+            let s = pair.as_str();
+            keep_case("y", s)
+        })
 }
 
 #[cfg(test)]
