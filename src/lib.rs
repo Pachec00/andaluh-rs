@@ -173,6 +173,15 @@ pub fn psico_rule(input: &str) -> Result<String, Error> {
         })
 }
 
+pub fn vaf_rule(input: &str) -> Result<String, Error> {
+    rule!(Rule::vaf, input,
+        Rule::ZSv | Rule::Cv => |pair: Pair<Rule>| {
+            let s = pair.as_str();
+            let next = slice!(s, 1);
+            keep_case("ç", s) + &next
+        })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -246,6 +255,15 @@ mod tests {
         let expected = "sicologo seudoescritor";
 
         let output = psico_rule(input).expect("Wrong parser");
+        assert_eq!(output, expected);
+    }
+
+    #[test]
+    fn test_vaf_rule() {
+        let input = "Zaragoza solsticio";
+        let expected = "Çaragoça çolstiçio";
+
+        let output = vaf_rule(input).expect("Wrong parser");
         assert_eq!(output, expected);
     }
 }
