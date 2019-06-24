@@ -179,6 +179,26 @@ pub fn v_rule(input: &str) -> Result<String, Error> {
         Ok(output.join(""))
 }
 
+pub fn ll_rule(input: &str) -> Result<String, Error> {
+        let pairs = AndaluhParser::parse(Rule::ll, input)?;
+        let mut output: Vec<String> = vec![];
+
+        for pair in pairs {
+            let chunk = match pair.as_rule() {
+                Rule::LL => {
+                    let s = pair.as_str();
+                    keep_case("y", s)
+                },
+                _ => {
+                    String::from(pair.as_str())
+                },
+            };
+            output.push(chunk);
+        }
+
+        Ok(output.join(""))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -225,6 +245,15 @@ mod tests {
         let expected = "embidia balor lleba";
 
         let output = v_rule(input).expect("Wrong parser");
+        assert_eq!(output, expected);
+    }
+
+    #[test]
+    fn test_ll_rule() {
+        let input = "lleva valla";
+        let expected = "yeva vaya";
+
+        let output = ll_rule(input).expect("Wrong parser");
         assert_eq!(output, expected);
     }
 }

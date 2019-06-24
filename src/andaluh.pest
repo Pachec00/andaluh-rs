@@ -69,3 +69,8 @@ gj = _{ ((GJV | GUE | GUEd | BUE | BUE1 | letter)+ ~ space?)+ }
 V = { ("v" | "V") }
 NV = { N ~ V }
 v = _{ ((NV | V | letter)+ ~ space?)+ }
+
+// Replacing /ʎ/ (digraph ll) with Greek Y for /ʤ/ sound (voiced postalveolar affricate)
+
+LL = { L ~ L }
+ll = _{ ((LL | letter)+ ~ space?)+ }
