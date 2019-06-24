@@ -160,6 +160,14 @@ pub fn ll_rule(input: &str) -> Result<String, Error> {
         })
 }
 
+pub fn l_rule(input: &str) -> Result<String, Error> {
+    rule!(Rule::l, input,
+        Rule::L => |pair: Pair<Rule>| {
+            let s = pair.as_str();
+            keep_case("r", s)
+        })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -215,6 +223,15 @@ mod tests {
         let expected = "yeva vaya";
 
         let output = ll_rule(input).expect("Wrong parser");
+        assert_eq!(output, expected);
+    }
+
+    #[test]
+    fn test_l_rule() {
+        let input = "silbar acolchado";
+        let expected = "sirbar acorchado";
+
+        let output = l_rule(input).expect("Wrong parser");
         assert_eq!(output, expected);
     }
 }

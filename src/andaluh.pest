@@ -74,3 +74,17 @@ v = _{ ((NV | V | letter)+ ~ space?)+ }
 
 LL = { L ~ L }
 ll = _{ ((LL | letter)+ ~ space?)+ }
+
+// Rotating /l/ with /r/
+
+Cc = { ("ç" | "Ç") }
+D = { ("d" | "D" ) }
+F = { ("f" | "F" ) }
+K = { ("k" | "K" ) }
+P = { ("p" | "P" ) }
+Q = { ("q" | "Q" ) }
+R = { ("r" | "R" ) }
+T = { ("t" | "T" ) }
+Z = { ("z" | "Z" ) }
+Lnext = { (B|C|Cc|G|S|D|F|G|H|K|M|P|Q|R|T|X|Z) }
+l = _{ (((L ~ Lnext) | letter)+ ~ space?)+ }
