@@ -27,13 +27,13 @@ macro_rules! slice {
 }
 
 macro_rules! rule {
-    ($rule: expr, $input: expr, $( $t: pat => $r: expr ),* ) => {{
+    ($rule: expr, $input: expr, $( $($t: pat)|* => $r: expr ),* ) => {{
         let pairs = AndaluhParser::parse($rule, $input)?;
         let mut output: Vec<String> = vec![];
 
         for pair in pairs {
             let chunk = match pair.as_rule() {
-                $( $t => {
+                $( $($t)|* => {
                     $r(pair)
                 } ),*
                 _ => {
@@ -67,10 +67,7 @@ pub fn epa() {
 
 pub fn h_rule(input: &str) -> Result<String, Error> {
     rule!(Rule::h, input,
-        Rule::initial_h => |pair: Pair<Rule>| {
-            String::from(&pair.as_str()[1..])
-        },
-        Rule::inner_h => |pair: Pair<Rule>| {
+        Rule::initial_h | Rule::inner_h => |pair: Pair<Rule>| {
             String::from(&pair.as_str()[1..])
         },
         Rule::hue => |pair: Pair<Rule>| {
@@ -168,6 +165,14 @@ pub fn l_rule(input: &str) -> Result<String, Error> {
         })
 }
 
+pub fn psico_rule(input: &str) -> Result<String, Error> {
+    rule!(Rule::psico, input,
+        Rule::PSIC | Rule::PSEUD => |pair: Pair<Rule>| {
+            let s = pair.as_str();
+            slice!(s, 1)
+        })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -232,6 +237,15 @@ mod tests {
         let expected = "sirbar acorchado";
 
         let output = l_rule(input).expect("Wrong parser");
+        assert_eq!(output, expected);
+    }
+
+    #[test]
+    fn test_psico_rule() {
+        let input = "psicologo pseudoescritor";
+        let expected = "sicologo seudoescritor";
+
+        let output = psico_rule(input).expect("Wrong parser");
         assert_eq!(output, expected);
     }
 }

@@ -88,3 +88,10 @@ T = { ("t" | "T" ) }
 Z = { ("z" | "Z" ) }
 Lnext = { (B|C|Cc|G|S|D|F|G|H|K|M|P|Q|R|T|X|Z) }
 l = _{ (((L ~ Lnext) | letter)+ ~ space?)+ }
+
+// Drops /p/ for pseudo- or psico- prefixes
+
+I = { ("i" | "I" ) }
+PSIC = { P ~ S ~ I ~ C }
+PSEUD = { P ~ S ~ E ~ U ~ D }
+psico = _{ ((PSIC|PSEUD|letter)+ ~ space?)+ }
