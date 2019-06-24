@@ -39,6 +39,7 @@ fn keep_case(input: &str, case: &str) -> String {
         }).collect::<String>()
 }
 
+// TODO: Manage RULES_EXCEPT
 pub fn epa() {
 }
 
@@ -154,6 +155,30 @@ pub fn gj_rule(input: &str) -> Result<String, Error> {
         Ok(output.join(""))
 }
 
+pub fn v_rule(input: &str) -> Result<String, Error> {
+        let pairs = AndaluhParser::parse(Rule::v, input)?;
+        let mut output: Vec<String> = vec![];
+
+        for pair in pairs {
+            let chunk = match pair.as_rule() {
+                Rule::NV => {
+                    let s = pair.as_str();
+                    keep_case("mb", s)
+                },
+                Rule::V => {
+                    let s = pair.as_str();
+                    keep_case("b", s)
+                },
+                _ => {
+                    String::from(pair.as_str())
+                },
+            };
+            output.push(chunk);
+        }
+
+        Ok(output.join(""))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -191,6 +216,15 @@ mod tests {
         let expected = "Giharrito AGuelo VERGUENZA GUEN hamón";
 
         let output = gj_rule(input).expect("Wrong parser");
+        assert_eq!(output, expected);
+    }
+
+    #[test]
+    fn test_v_rule() {
+        let input = "envidia valor lleva";
+        let expected = "embidia balor lleba";
+
+        let output = v_rule(input).expect("Wrong parser");
         assert_eq!(output, expected);
     }
 }

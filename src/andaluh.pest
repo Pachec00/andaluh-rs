@@ -63,3 +63,9 @@ GUEd = { (GUd ~ closed_vowel) }
 BUE1 = { B ~ U ~ E ~ (N|L|S) }
 BUE = { nM ~ B ~ U ~ E ~ (N|L|S) }
 gj = _{ ((GJV | GUE | GUEd | BUE | BUE1 | letter)+ ~ space?)+ }
+
+// Replacing all /v/ (Voiced labiodental fricative) with /b/
+
+V = { ("v" | "V") }
+NV = { N ~ V }
+v = _{ ((NV | V | letter)+ ~ space?)+ }
