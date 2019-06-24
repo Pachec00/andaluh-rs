@@ -3,9 +3,11 @@ word = { letter+ }
 space = { SEPARATOR+ }
 phrase = { (word ~ SEPARATOR+)+ }
 
-vowel_tilde = { ("á"|"é"|"í"|"ú") }
-vowel_ntilde = { ("a"|"e"|"i"|"o"|"u") }
+vowel_tilde = { ("á"|"é"|"í"|"ó"|"ú"|"Á"|"É"|"Í"|"Ó"|"Ú") }
+vowel_ntilde = { ("a"|"e"|"i"|"o"|"u"|"A"|"E"|"I"|"O"|"U") }
 vowel = { (vowel_ntilde | vowel_tilde) }
+closed_vowel = { ("e"|"i"|"é"|"í"|"E"|"I"|"É"|"Í") }
+open_vowel = { ("a"|"o"|"u"|"á"|"ó"|"ú"|"A"|"O"|"U"|"Á"|"Ó"|"Ú") }
 
 // supress muted /h/
 
@@ -36,3 +38,28 @@ x = _{ (initial_x* ~ ((inner_vowel_x) | letter+)+ ~ space?)+ }
 C = { ("c" | "C") }
 CH = { C ~ H }
 ch = _{ ((CH | letter)+ ~ space?)+ }
+
+// Replacing /x/ (voiceless postalveolar fricative) with /h/
+
+G = { ("g" | "G") }
+J = { ("j" | "J") }
+U = { ("u" | "U") }
+Ud = { ("ü" | "Ü") }
+B = { ("b" | "B") }
+M = { ("m" | "M") }
+E = { ("e" | "E") }
+N = { ("n" | "N") }
+L = { ("l" | "L") }
+S = { ("s" | "S") }
+nM = { 'a'..'l' | 'n'..'z' | 'A'..'L' | 'N'..'Z' }
+GJ = { ( G | J ) }
+GJ1 = { GJ ~ closed_vowel }
+GJ2 = { J ~ open_vowel }
+GJV = { GJ1 | GJ2 }
+GU = { (G ~ U) }
+GUd = { (G ~ Ud) }
+GUE = { (GU ~ closed_vowel) }
+GUEd = { (GUd ~ closed_vowel) }
+BUE1 = { B ~ U ~ E ~ (N|L|S) }
+BUE = { nM ~ B ~ U ~ E ~ (N|L|S) }
+gj = _{ ((GJV | GUE | GUEd | BUE | BUE1 | letter)+ ~ space?)+ }

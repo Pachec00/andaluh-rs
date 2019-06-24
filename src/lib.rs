@@ -106,6 +106,54 @@ pub fn ch_rule(input: &str) -> Result<String, Error> {
         Ok(output.join(""))
 }
 
+pub fn gj_rule(input: &str) -> Result<String, Error> {
+        let pairs = AndaluhParser::parse(Rule::gj, input)?;
+        let mut output: Vec<String> = vec![];
+
+        for pair in pairs {
+            let chunk = match pair.as_rule() {
+                Rule::BUE1 => {
+                    let s = pair.as_str();
+                    let b = slice!(s, 0, 1);
+                    let next = slice!(s, 1);
+                    keep_case("g", &b) + &next
+                },
+                Rule::BUE => {
+                    let s = pair.as_str();
+                    let prev = slice!(s, 0, 1);
+                    let b = slice!(s, 1, 2);
+                    let next = slice!(s, 2);
+                    prev + &keep_case("g", &b) + &next
+                },
+                Rule::GJV => {
+                    let s = pair.as_str();
+                    let gj = slice!(s, 0, 1);
+                    let next = slice!(s, 1);
+                    keep_case("h", &gj) + &next
+                },
+                Rule::GUE => {
+                    let s = pair.as_str();
+                    let g = slice!(s, 0, 1);
+                    let next = slice!(s, 2);
+                    g + &next
+                },
+                Rule::GUEd => {
+                    let s = pair.as_str();
+                    let g = slice!(s, 0, 1);
+                    let u = slice!(s, 1, 2);
+                    let next = slice!(s, 2);
+                    g + &keep_case("u", &u) + &next
+                },
+                _ => {
+                    String::from(pair.as_str())
+                },
+            };
+            output.push(chunk);
+        }
+
+        Ok(output.join(""))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -134,6 +182,15 @@ mod tests {
         let expected = "Xungo Xaxi";
 
         let output = ch_rule(input).expect("Wrong parser");
+        assert_eq!(output, expected);
+    }
+
+    #[test]
+    fn test_gj_rule() {
+        let input = "Guijarrito ABuelo VERGÜENZA BUEN jamón";
+        let expected = "Giharrito AGuelo VERGUENZA GUEN hamón";
+
+        let output = gj_rule(input).expect("Wrong parser");
         assert_eq!(output, expected);
     }
 }
