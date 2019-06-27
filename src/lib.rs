@@ -6,6 +6,8 @@ use unicode_segmentation::UnicodeSegmentation;
 
 use failure::Error;
 
+mod defs;
+
 macro_rules! chars {
     ($input: expr) => {
         UnicodeSegmentation::graphemes($input, true)
@@ -23,6 +25,12 @@ macro_rules! slice {
         chars!($input)
             .skip($start)
             .collect::<String>()
+    }
+}
+
+macro_rules! len {
+    ($input: expr) => {
+        chars!($input).count()
     }
 }
 
@@ -45,6 +53,38 @@ macro_rules! rule {
 
         Ok(output.join(""))
     }}
+}
+
+fn circumflex<'a>(vowel: &'a str) -> &'a str {
+    match vowel {
+        "a" => "â",
+        "e" => "ê",
+        "i" => "î",
+        "o" => "ô",
+        "u" => "û",
+        "A" => "Â",
+        "E" => "Ê",
+        "I" => "Î",
+        "O" => "Ô",
+        "U" => "Û",
+        _ => vowel
+    }
+}
+
+fn tilde<'a>(vowel: &'a str) -> &'a str {
+    match vowel {
+        "a" => "á",
+        "e" => "é",
+        "i" => "í",
+        "o" => "ó",
+        "u" => "ú",
+        "A" => "Á",
+        "E" => "É",
+        "I" => "Í",
+        "O" => "Ó",
+        "U" => "Ú",
+        _ => vowel
+    }
 }
 
 #[derive(Parser)]
@@ -182,6 +222,126 @@ pub fn vaf_rule(input: &str) -> Result<String, Error> {
         })
 }
 
+pub fn word_ending_rule(input: &str) -> Result<String, Error> {
+    rule!(Rule::word_ending, input,
+        Rule::ENDING_WORD => |pair: Pair<Rule>| {
+            let mut output: Vec<String> = vec![];
+            let word = pair.as_str();
+            let n = len!(word);
+            for pair in pair.into_inner() {
+                let chunk = match pair.as_rule() {
+                    Rule::ENDING_D => {
+                        let prefix = slice!(word, 0, n - 2);
+                        let vowel = slice!(word, n - 2, n - 1);
+                        let d = slice!(word, n - 1);
+
+                        let pl = prefix.to_lowercase();
+                        if ["á", "é", "í", "ó", "ú"].iter().any(|x| pl.contains(x)) {
+                            return prefix + defs::WORD_ENDING_D_UNSTRESS[&vowel[..]];
+                        }
+
+                        match &vowel.to_lowercase()[..] {
+                            "a" | "e" | "á" | "é" => {
+                                prefix + defs::WORD_ENDING_D_STRESS[&vowel[..]]
+                            }
+                            _ => {
+                                let part1 = defs::WORD_ENDING_D_STRESS[&vowel[..]];
+                                prefix + part1 + &keep_case("h", &d)
+                            }
+                        }
+                    },
+                    Rule::ENDING_S => {
+                        let prefix = slice!(word, 0, n - 2);
+                        let vowel = slice!(word, n - 2, n - 1);
+                        let s = slice!(word, n - 1);
+
+                        match &vowel.to_lowercase()[..] {
+                            "á" | "é" | "í" | "ó" | "ú" => {
+                                prefix + defs::WORD_ENDING_S[&vowel[..]] + &keep_case("h", &s)
+                            }
+                            _ => {
+                                prefix + defs::WORD_ENDING_S[&vowel[..]]
+                            }
+                        }
+                    },
+                    Rule::ENDING_CONS => {
+                        let prefix = slice!(word, 0, n - 2);
+                        let vowel = slice!(word, n - 2, n - 1);
+                        let c = slice!(word, n - 1);
+
+                        let pl = prefix.to_lowercase();
+                        if ["á", "é", "í", "ó", "ú"].iter().any(|x| pl.contains(x)) {
+                            return prefix + defs::WORD_ENDING_CONS[&vowel[..]];
+                        }
+
+                        prefix + defs::WORD_ENDING_CONS[&vowel[..]] + &keep_case("h", &c)
+                    },
+                    Rule::ENDING_PS => {
+                        let prefix = slice!(word, 0, n - 3);
+                        let e = slice!(word, n - 3, n - 2);
+
+                        let pl = prefix.to_lowercase();
+                        if ["á", "é", "í", "ó", "ú"].iter().any(|x| pl.contains(x)) {
+                            return prefix + circumflex(&e)
+                        }
+
+                        word.to_string()
+                    },
+                    Rule::INTER_D => {
+                        let last = slice!(word, n - 1);
+                        let (n, last_s) = match &last[..] {
+                            "s" | "S" => (n - 1, true),
+                            _ => (n, false)
+                        };
+
+                        let prefix = slice!(word, 0, n - 3);
+                        let vowel_a = slice!(word, n - 3, n - 2);
+                        let d = slice!(word, n - 2, n - 1);
+                        let vowel_b = slice!(word, n - 1, n);
+
+                        let mut suffix = String::new() + &vowel_a + &d + &vowel_b;
+                        if last_s {
+                            suffix += &last;
+                        }
+
+                        let pl = prefix.to_lowercase();
+                        if ["á", "é", "í", "ó", "ú"].iter().any(|x| pl.contains(x)) {
+                            return word.to_string();
+                        }
+
+                        match &suffix.to_lowercase()[..] {
+                            "ada" => {
+                                prefix + &keep_case("á", &vowel_b)
+                            }
+                            "adas" => {
+                                let vowel = circumflex(&vowel_a);
+                                let sfx = vowel.to_string() + "h";
+                                prefix + &keep_case(&sfx, &slice!(&suffix[..], 0, 2))
+                            }
+                            "ado" => {
+                                prefix + &vowel_a + &vowel_b
+                            }
+                            "ados" | "idos" | "ídos" => {
+                                let vowelb = circumflex(&vowel_b);
+                                let vowela = tilde(&vowel_a);
+                                prefix + vowela + vowelb
+                            }
+                            "ido" | "ído" => {
+                                prefix + &keep_case("í", &vowel_a[..]) + &vowel_b
+                            }
+                            _ => word.to_string()
+                        }
+                    },
+                    _ => {
+                        "".to_string()
+                    },
+                };
+                output.push(chunk);
+            }
+            output.join("")
+        })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -264,6 +424,15 @@ mod tests {
         let expected = "Çaragoça çolstiçio";
 
         let output = vaf_rule(input).expect("Wrong parser");
+        assert_eq!(output, expected);
+    }
+
+    #[test]
+    fn test_word_ending_rule() {
+        let input = "Madrid tazas disfraz Colocados tomate tríceps triceps";
+        let expected = "Madrîh tazâ disfrâh Colocáô tomate trícê triceps";
+
+        let output = word_ending_rule(input).expect("Wrong parser");
         assert_eq!(output, expected);
     }
 }

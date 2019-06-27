@@ -103,3 +103,17 @@ psico = _{ ((PSIC|PSEUD|letter)+ ~ space?)+ }
 ZSv = { (Z|S) ~ (vowel|hat_vowel) }
 Cv = { C ~ (closed_vowel|hat_closed_vowel) }
 vaf = _{ ((ZSv | Cv | letter)+ ~ space?)+ }
+
+// Word ending rules
+ENDING_D = { (vowel ~ D) }
+ENDING_S = { (vowel ~ S) }
+ENDING_CONS = { (vowel ~ (B|C|F|G|J|K|L|P|R|T|X|Z)) }
+ENDING_PS = { (E ~ P ~ S) }
+INTER_D = { ("a"|"A"|"i"|"I"|"í"|"Í") ~ D ~ ("o"|"O"|"a"|"A") ~ S? }
+
+ENDING_RULE = { (INTER_D | ENDING_PS | ENDING_D | ENDING_S | ENDING_CONS) ~ (space | EOI) }
+ENDING_WORD = { (!ENDING_RULE ~ letter)* ~
+                (INTER_D | ENDING_PS | ENDING_D | ENDING_S | ENDING_CONS)
+              }
+
+word_ending = _ { ((ENDING_WORD | word) ~ (space | EOI))+ }
