@@ -342,6 +342,63 @@ pub fn word_ending_rule(input: &str) -> Result<String, Error> {
         })
 }
 
+pub fn digraph_rule(input: &str) -> Result<String, Error> {
+    rule!(Rule::digraph, input,
+        Rule::DIGRAPH_EXP_LSTRST => |pair: Pair<Rule>| {
+            let groups: Vec<Pair<Rule>> = pair.into_inner().collect();
+            let vowel = groups[0].as_str().to_string();
+            let lr_char = groups[1].as_str().to_string();
+            let t_char = groups[3].as_str().to_string();
+
+            let lr_repl = match &lr_char[..] {
+                "l"|"L" => keep_case("r", &lr_char),
+                _ => lr_char
+            };
+
+            vowel + &lr_repl + &format!("{0}{0}", t_char)
+        },
+        Rule::DIGRAPH_EXP_TRANS => |pair: Pair<Rule>| {
+            let groups: Vec<Pair<Rule>> = pair.into_inner().collect();
+            let init = groups[0].as_str().to_string();
+            let vowel = groups[1].as_str().to_string();
+            let cons = groups[3].as_str().to_string();
+
+            match &cons[..] {
+                "L"|"l" => init + circumflex(&vowel) + &format!("{0}-{0}", cons),
+                _ => init + circumflex(&vowel) + &format!("{0}{0}", cons)
+            }
+        },
+        Rule::DIGRAPH_EXP_BDNR => |pair: Pair<Rule>| {
+            let s = pair.as_str();
+            let vowel = slice!(s, 0, 1);
+            let bdnr = slice!(s, 1, 2);
+            let digraph = slice!(s, 3);
+
+            match &bdnr[..] {
+                "R" | "r" => {
+                    vowel + &bdnr + &format!("{0}{0}", digraph)
+                }
+                _ => {
+                    circumflex(&vowel).to_string() + &format!("{0}{0}", digraph)
+                }
+            }
+        },
+        Rule::DIGRAPH_EXP_L => |pair: Pair<Rule>| {
+            let s = pair.as_str();
+            let vowel = slice!(s, 0, 1);
+            let digraph = slice!(s, 2);
+
+            circumflex(&vowel).to_string() + &format!("{0}-{0}", digraph)
+        },
+        Rule::GEN_DIGRAPH => |pair: Pair<Rule>| {
+            let s = pair.as_str();
+            let vowel = slice!(s, 0, 1);
+            let digraph = slice!(s, 2);
+
+            circumflex(&vowel).to_string() + &format!("{0}{0}", digraph)
+        })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -433,6 +490,15 @@ mod tests {
         let expected = "Madrîh tazâ disfrâh Colocáô tomate trícê triceps";
 
         let output = word_ending_rule(input).expect("Wrong parser");
+        assert_eq!(output, expected);
+    }
+
+    #[test]
+    fn test_digraph_rule() {
+        let input = "asfixian Conmemorar atlántico abstracto perspectiva aerotransporte translado intersticial solsticio superstición";
+        let expected = "âffixian Cômmemorar âl-lántico âttrâtto perppêttiva aerotrâpporte trâl-lado intertticial sortticio superttición";
+
+        let output = digraph_rule(input).expect("Wrong parser");
         assert_eq!(output, expected);
     }
 }

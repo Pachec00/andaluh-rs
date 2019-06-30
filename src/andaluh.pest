@@ -117,3 +117,64 @@ ENDING_WORD = { (!ENDING_RULE ~ letter)* ~
               }
 
 word_ending = _ { ((ENDING_WORD | word) ~ (space | EOI))+ }
+
+
+// Digraphs producers. (vowel)(const)(const) that triggers the general digraph rule
+Nn = { ("ñ" | "Ñ" ) }
+Y = { ("y" | "Y" ) }
+W = { ("w" | "W" ) }
+DIGRAPH_1 = { (B|C|Cc|D|F|G|H|M|N|P|Q|T|X|Y) }
+DIGRAPH_B = { (B ~ DIGRAPH_1) }
+DIGRAPH_C = { (C ~ DIGRAPH_1) }
+DIGRAPH_F = { (F ~ DIGRAPH_1) }
+DIGRAPH_G = { (G ~ DIGRAPH_1) }
+DIGRAPH_P = { (P ~ DIGRAPH_1) }
+
+DIGRAPH_2 = { (DIGRAPH_1 | L) }
+DIGRAPH_D = { (D ~ DIGRAPH_2) }
+DIGRAPH_T = { (T ~ DIGRAPH_2) }
+
+DIGRAPH_3 = { (DIGRAPH_2 | R) }
+DIGRAPH_J = { (J ~ DIGRAPH_3) }
+DIGRAPH_L = { (L ~ DIGRAPH_3) }
+DIGRAPH_X = { (X ~ DIGRAPH_3) }
+DIGRAPH_Z = { (Z ~ DIGRAPH_3) }
+
+DIGRAPH_S = { (S ~ (DIGRAPH_3 | K | Nn)) }
+
+DIGRAPH_M = { (M ~ M) | (M ~ N) }
+DIGRAPH_N = { (N ~ M) | (N ~ N) }
+DIGRAPH_R = { (R ~ N) }
+
+DIGRAPH = { (DIGRAPH_B | DIGRAPH_C | DIGRAPH_D |
+             DIGRAPH_F | DIGRAPH_G | DIGRAPH_J |
+             DIGRAPH_L | DIGRAPH_M | DIGRAPH_N |
+             DIGRAPH_R | DIGRAPH_S | DIGRAPH_T |
+             DIGRAPH_X | DIGRAPH_Z) }
+
+GEN_DIGRAPH = { (vowel ~ DIGRAPH) }
+
+// atlántico => âl-lántico | orla => ôl-la | adlátere => âl-látere | tesla => têl-la ...
+DIGRAPH_EXP_L = { (vowel ~ (D|J|R|S|T|X|Z) ~ L) }
+
+// abstracto => âttrâtto | adscrito => âccrito | perspectiva => pêrppêttiba
+DIGRAPH_EXP_BDNR = { (vowel ~ (B|D|N|R) ~ S ~ (B|C|Cc|D|F|G|H|J|K|L|M|N|P|Q|S|T|V|W|X|Y|Z)) }
+
+// aerotransporte => aerotrâpporte | translado => trâl-lado | transcendente => trâççendente | postoperatorio => pôttoperatorio | postpalatal => pôppalatal
+TR = { T ~ R }
+NS = { N ~ S }
+ST = { S ~ T }
+A = { "a" | "A" }
+O = { "o" | "O" }
+TRANS1 = { (TR|P) }
+TRANS2 = { (A|O) }
+TRANS3 = { (NS|ST) }
+DIGRAPH_EXP_TRANS = { TRANS1 ~ TRANS2 ~ TRANS3 ~ (B|C|Cc|D|F|G|H|J|K|L|M|N|P|Q|S|T|V|W|X|Y|Z) }
+
+// intersticial / solsticio / superstición / cárstico => interttiçiâh / çorttiçio / çuperttiçión / cárttico
+DIGRAPH_EXP_LSTRST = { (vowel ~ (L|R) ~ S ~ T) }
+
+digraph = _{ ((
+              (DIGRAPH_EXP_LSTRST | DIGRAPH_EXP_TRANS | DIGRAPH_EXP_BDNR |
+               DIGRAPH_EXP_L | GEN_DIGRAPH)
+              | letter)+ ~ space?)+ }
