@@ -411,6 +411,19 @@ pub fn exception_rule(input: &str) -> Result<String, Error> {
         })
 }
 
+pub fn word_interaction_rule(input: &str) -> Result<String, Error> {
+    rule!(Rule::word_interaction, input,
+        Rule::ENDING_L => |pair: Pair<Rule>| {
+            let groups: Vec<Pair<Rule>> = pair.into_inner().collect();
+            let prefix = groups[0].as_str().to_string();
+            let l = groups[1].as_str().to_string();
+            let space = groups[2].as_str().to_string();
+            let next = groups[3].as_str().to_string();
+
+            prefix + &keep_case("r", &l) + &space + &next
+        })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -520,6 +533,15 @@ mod tests {
         let expected = "tomate bienmandao TuRuRú crâh";
 
         let output = exception_rule(input).expect("Wrong parser");
+        assert_eq!(output, expected);
+    }
+
+    #[test]
+    fn test_word_interaction_rule() {
+        let input = "el transcurso";
+        let expected = "er transcurso";
+
+        let output = word_interaction_rule(input).expect("Wrong parser");
         assert_eq!(output, expected);
     }
 }

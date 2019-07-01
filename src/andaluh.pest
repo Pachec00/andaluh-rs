@@ -180,3 +180,7 @@ digraph = _{ ((
               | letter)+ ~ space?)+ }
 
 exception = _ { (word ~ space?)+ }
+
+// Contractions and other word interaction rules
+ENDING_L = { (!L ~ letter)+ ~ L ~ space+ ~ (B|C|Cc|D|F|G|H|J|K|L|M|N|Nn|P|Q|S|T|V|W|X|Y|Z) }
+word_interaction = _ { ((ENDING_L | word) ~ space*)+ }
