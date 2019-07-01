@@ -513,7 +513,8 @@ mod tests {
         let output = digraph_rule(input).expect("Wrong parser");
         assert_eq!(output, expected);
     }
-        #[test]
+
+    #[test]
     fn test_exception_rule() {
         let input = "tomate biêmmandao TuRuRú crack";
         let expected = "tomate bienmandao TuRuRú crâh";
