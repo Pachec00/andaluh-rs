@@ -399,6 +399,18 @@ pub fn digraph_rule(input: &str) -> Result<String, Error> {
         })
 }
 
+pub fn exception_rule(input: &str) -> Result<String, Error> {
+    rule!(Rule::exception, input,
+        Rule::word => |pair: Pair<Rule>| {
+            let s = pair.as_str();
+            let out = defs::ENDING_RULES_EXCEPTION
+                .get(&s.to_lowercase()[..])
+                .unwrap_or(&s);
+
+            keep_case(out, s)
+        })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -499,6 +511,14 @@ mod tests {
         let expected = "âffixian Cômmemorar âl-lántico âttrâtto perppêttiva aerotrâpporte trâl-lado intertticial sortticio superttición";
 
         let output = digraph_rule(input).expect("Wrong parser");
+        assert_eq!(output, expected);
+    }
+        #[test]
+    fn test_exception_rule() {
+        let input = "tomate biêmmandao TuRuRú crack";
+        let expected = "tomate bienmandao TuRuRú crâh";
+
+        let output = exception_rule(input).expect("Wrong parser");
         assert_eq!(output, expected);
     }
 }

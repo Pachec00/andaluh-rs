@@ -178,3 +178,5 @@ digraph = _{ ((
               (DIGRAPH_EXP_LSTRST | DIGRAPH_EXP_TRANS | DIGRAPH_EXP_BDNR |
                DIGRAPH_EXP_L | GEN_DIGRAPH)
               | letter)+ ~ space?)+ }
+
+exception = _ { (word ~ space?)+ }
