@@ -2,6 +2,7 @@ letter = { (LETTER | NUMBER | PUNCTUATION | SYMBOL) }
 word = { letter+ }
 space = { SEPARATOR+ }
 phrase = { (word ~ SEPARATOR+)+ }
+sp = { (SEPARATOR | PUNCTUATION)+ }
 
 vowel_tilde = { ("á"|"é"|"í"|"ó"|"ú"|"Á"|"É"|"Í"|"Ó"|"Ú") }
 vowel_ntilde = { ("a"|"e"|"i"|"o"|"u"|"A"|"E"|"I"|"O"|"U") }
@@ -14,14 +15,14 @@ hat_closed_vowel = { ("ê"|"î"|"Ê"|"Î") }
 // supress muted /h/
 
 H = { ("h" | "H") }
-nH = { 'a'..'g' | 'i'..'z' | 'A'..'G' | 'I'..'Z' }
 initial_h = { H ~ letter }
-inner_ch = { ("c" | "C") ~ H ~ letter }
-inner_h = { H ~ letter }
+CH = { C ~ H }
+inner_ch = { CH ~ letter }
+inner_h = { !inner_ch ~ H ~ letter }
 hua = { H ~ ("ua" | "UA" | "Ua" | "uA") }
 hue = { H ~ ("ue" | "UE" | "Ue" | "uE") }
-noh = { nH+ }
-h = _{ (initial_h* ~ ((hua | hue | inner_ch | inner_h) | noh+)+ ~ space?)+ }
+noh = { !CH ~ !H ~ letter }
+h = _{ ((sp|SOI)? ~ initial_h* ~ ((hua | hue | inner_ch | inner_h) | noh+)+)+ }
 
 // Replacement rules for /ks/ with EPA VAF
 
@@ -33,13 +34,12 @@ initial_x = { X ~ letter }
 // Axila => Aççila | Éxito => Éççito
 inner_vowel_x = { vowel ~ X ~ vowel }
 
-x = _{ (initial_x* ~ ((inner_vowel_x) | letter+)+ ~ space?)+ }
+x = _{ (initial_x* ~ ((inner_vowel_x) | (!inner_vowel_x ~ letter)+)+ ~ sp?)+ }
 
 // Replacement rules for /∫/ (voiceless postalveolar fricative)
 
 C = { ("c" | "C") }
-CH = { C ~ H }
-ch = _{ ((CH | letter)+ ~ space?)+ }
+ch = _{ ((CH | letter)+ ~ sp?)+ }
 
 // Replacing /x/ (voiceless postalveolar fricative) with /h/
 
@@ -53,7 +53,6 @@ E = { ("e" | "E") }
 N = { ("n" | "N") }
 L = { ("l" | "L") }
 S = { ("s" | "S") }
-nM = { 'a'..'l' | 'n'..'z' | 'A'..'L' | 'N'..'Z' }
 GJ = { ( G | J ) }
 GJ1 = { GJ ~ closed_vowel }
 GJ2 = { J ~ open_vowel }
@@ -62,20 +61,21 @@ GU = { (G ~ U) }
 GUd = { (G ~ Ud) }
 GUE = { (GU ~ closed_vowel) }
 GUEd = { (GUd ~ closed_vowel) }
-BUE1 = { B ~ U ~ E ~ (N|L|S) }
-BUE = { nM ~ B ~ U ~ E ~ (N|L|S) }
-gj = _{ ((GJV | GUE | GUEd | BUE | BUE1 | letter)+ ~ space?)+ }
+UENLS = { U ~ E ~ (N|L|S) }
+BUE1 = { (sp|SOI) ~ B ~ UENLS }
+BUE = { !M ~ letter ~ B ~ UENLS }
+gj = _{ ((GJV | GUE | GUEd | BUE | BUE1 | letter)+ ~ sp?)+ }
 
 // Replacing all /v/ (Voiced labiodental fricative) with /b/
 
 V = { ("v" | "V") }
 NV = { N ~ V }
-v = _{ ((NV | V | letter)+ ~ space?)+ }
+v = _{ ((NV | V | letter)+ ~ sp?)+ }
 
 // Replacing /ʎ/ (digraph ll) with Greek Y for /ʤ/ sound (voiced postalveolar affricate)
 
 LL = { L ~ L }
-ll = _{ ((LL | letter)+ ~ space?)+ }
+ll = _{ ((LL | letter)+ ~ sp?)+ }
 
 // Rotating /l/ with /r/
 
@@ -89,20 +89,20 @@ R = { ("r" | "R" ) }
 T = { ("t" | "T" ) }
 Z = { ("z" | "Z" ) }
 Lnext = { (B|C|Cc|G|S|D|F|G|H|K|M|P|Q|R|T|X|Z) }
-l = _{ (((L ~ Lnext) | letter)+ ~ space?)+ }
+l = _{ (((L ~ Lnext) | letter)+ ~ sp?)+ }
 
 // Drops /p/ for pseudo- or psico- prefixes
 
 I = { ("i" | "I" ) }
 PSIC = { P ~ S ~ I ~ C }
 PSEUD = { P ~ S ~ E ~ U ~ D }
-psico = _{ ((PSIC|PSEUD|letter)+ ~ space?)+ }
+psico = _{ ((PSIC|PSEUD|letter)+ ~ sp?)+ }
 
 // Replacing Voiceless alveolar fricative (vaf) /s/ /θ/ with EPA's ç/Ç
 
 ZSv = { (Z|S) ~ (vowel|hat_vowel) }
 Cv = { C ~ (closed_vowel|hat_closed_vowel) }
-vaf = _{ ((ZSv | Cv | letter)+ ~ space?)+ }
+vaf = _{ ((ZSv | Cv | letter)+ ~ sp?)+ }
 
 // Word ending rules
 ENDING_D = { (vowel ~ D) }
@@ -111,12 +111,12 @@ ENDING_CONS = { (vowel ~ (B|C|F|G|J|K|L|P|R|T|X|Z)) }
 ENDING_PS = { (E ~ P ~ S) }
 INTER_D = { ("a"|"A"|"i"|"I"|"í"|"Í") ~ D ~ ("o"|"O"|"a"|"A") ~ S? }
 
-ENDING_RULE = { (INTER_D | ENDING_PS | ENDING_D | ENDING_S | ENDING_CONS) ~ (space | EOI) }
+ENDING_RULE = { (INTER_D | ENDING_PS | ENDING_D | ENDING_S | ENDING_CONS) ~ (sp | EOI) }
 ENDING_WORD = { (!ENDING_RULE ~ letter)* ~
                 (INTER_D | ENDING_PS | ENDING_D | ENDING_S | ENDING_CONS)
               }
 
-word_ending = _ { ((ENDING_WORD | word) ~ (space | EOI))+ }
+word_ending = _ { ((ENDING_WORD | word) ~ (sp | EOI))+ }
 
 
 // Digraphs producers. (vowel)(const)(const) that triggers the general digraph rule
@@ -177,10 +177,10 @@ DIGRAPH_EXP_LSTRST = { (vowel ~ (L|R) ~ S ~ T) }
 digraph = _{ ((
               (DIGRAPH_EXP_LSTRST | DIGRAPH_EXP_TRANS | DIGRAPH_EXP_BDNR |
                DIGRAPH_EXP_L | GEN_DIGRAPH)
-              | letter)+ ~ space?)+ }
+              | letter)+ ~ sp?)+ }
 
-exception = _ { (word ~ space?)+ }
+exception = _ { (word ~ sp?)+ }
 
 // Contractions and other word interaction rules
 ENDING_L = { (!L ~ letter)+ ~ L ~ space+ ~ (B|C|Cc|D|F|G|H|J|K|L|M|N|Nn|P|Q|S|T|V|W|X|Y|Z) }
-word_interaction = _ { ((ENDING_L | word) ~ space*)+ }
+word_interaction = _ { ((ENDING_L | word) ~ sp*)+ }

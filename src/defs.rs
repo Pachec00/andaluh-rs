@@ -44,4 +44,62 @@ lazy_static! {
         // Other exceptions monosyllables
         "as" => "âh", "clown" => "claun", "crack" => "crâh", "down" => "daun", "es" => "êh", "ex" => "êh", "ir" => "îh", "miss" => "mîh", "muy" => "mu", "ôff" => "off", "os" => "ô", "para" => "pa", "ring" => "rin", "rock" => "rôh", "spray" => "êppray", "sprint" => "êpprín", "wau" => "guau"
     };
+
+    pub static ref H_RULES_EXCEPT: HashMap<&'static str, &'static str> = hashmap!{
+        "haz" =>  "âh", "hez" =>  "êh", "hoz" =>  "ôh",
+        "oh" =>  "ôh",
+        "yihad" =>  "yihá",
+        "h" =>  "h" // Keep an isolated h as-is
+    };
+
+    pub static ref GJ_RULES_EXCEPT: HashMap<&'static str, &'static str> = hashmap!{
+        "gin" => "yin", "jazz" => "yâh", "jet" => "yêh"
+    };
+
+    pub static ref V_RULES_EXCEPT: HashMap<&'static str, &'static str> = hashmap!{
+        "vis" => "bî", "ves" => "bêh"
+    };
+
+    pub static ref LL_RULES_EXCEPT: HashMap<&'static str, &'static str> = hashmap!{
+        "grill" => "grîh"
+    };
+
+    pub static ref WORDEND_D_RULES_EXCEPT: HashMap<&'static str, &'static str> = hashmap!{
+        "çed" => "çêh"
+    };
+
+    pub static ref WORDEND_S_RULES_EXCEPT: HashMap<&'static str, &'static str> = hashmap!{
+        "bies" => "biêh", "bis" => "bîh", "blues" => "blû", "bus" => "bûh",
+        "dios" => "diôh", "dos" => "dôh",
+        "gas" => "gâh", "gres" => "grêh", "gris" => "grîh",
+        "luis" => "luîh",
+        "mies" => "miêh", "mus" => "mûh",
+        "os" => "ô",
+        "pis" => "pîh", "plus" => "plûh", "pus" => "pûh",
+        "ras" => "râh", "res" => "rêh",
+        "tos" => "tôh", "tres" => "trêh", "tris" => "trîh"
+    };
+
+    pub static ref WORDEND_CONST_RULES_EXCEPT: HashMap<&'static str, &'static str> = hashmap!{
+        "al" => "al", "cual" => "cuâ", "del" => "del", "dél" => "dél", "el" =>"el", "él" =>"èl", "tal" => "tal", "bil" => "bîl",
+        // TODO: uir = huir. Maybe better to add the exceptions on h_rules?
+        "por" => "por", "uir" => "huîh",
+        // sic, tac
+        "çic" => "çic", "tac" => "tac",
+        "yak" => "yak",
+        "stop" => "êttôh", "bip" => "bip"
+    };
+
+    pub static ref WORDEND_D_INTERVOWEL_RULES_EXCEPT: HashMap<&'static str, &'static str> = hashmap!{
+        // Ending with -ado
+        "fado" => "fado", "cado" => "cado", "nado" => "nado", "priado" => "priado",
+        // Ending with -ada
+        "fabada" => "fabada", "fabadas" =>"fabadas", "fada" => "fada", "ada" => "ada", "lada" => "lada", "rada" => "rada",
+        // Ending with -adas
+        "adas" => "adas", "radas" => "radas", "nadas" => "nadas",
+        // Ending with -ido
+        "aikido" => "aikido", "bûççido" => "bûççido", "çido" => "çido", "cuido" => "cuido", "cupido" => "cupido", "descuido" => "descuido",
+        "despido" => "despido", "eido" => "eido", "embido" => "embido", "fido" => "fido", "hido" => "hido", "ido" => "ido", "infido" => "infido",
+        "laido" => "laido", "libido" => "libido", "nido" => "nido", "nucleido" => "nucleido", "çonido" => "çonido", "çuido" => "çuido"
+    };
 }
