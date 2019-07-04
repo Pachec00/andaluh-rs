@@ -6,6 +6,8 @@ edition = "2018"
 
 description = "Transliterate español (spanish) spelling to andaluz proposals"
 license = "LGPL-3.0-or-later"
+readme = "README.md"
+repository = "https://github.com/andalugeeks/andaluh-rs"
 
 [dependencies]
 pest = "2.1.1"
